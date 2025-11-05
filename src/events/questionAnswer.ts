@@ -25,11 +25,15 @@ module.exports = {
         const answerLabel = new LabelBuilder()
             .setLabel("Your Answer:")
             .setTextInputComponent(answerInput)
-            .setDescription("Question: " + questionDB.question)
         const answerModal = new ModalBuilder()
             .setCustomId("answerModal")
             .setTitle("Please Answer the Question")
             .setLabelComponents(answerLabel)
-        await interaction.showModal(answerModal)
+        try {
+            await interaction.showModal(answerModal);
+        } catch (err: any) {
+            console.error("Modal build failed:", err);
+            if (err.errors) console.dir(err.errors, { depth: null });
+        }
     }
 }
