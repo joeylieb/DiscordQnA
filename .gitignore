@@ -4,3 +4,6 @@ config.json
 /.idea
 .DS_Store
 pnpm-lock.yaml
+/.next
+next-env.d.ts
+package-lock.json
