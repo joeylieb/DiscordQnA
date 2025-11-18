@@ -1,0 +1,15 @@
+{
+  "name": "websocket",
+  "version": "1.0.0",
+  "description": "For live components in NextJS to interact with the database",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "ws.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

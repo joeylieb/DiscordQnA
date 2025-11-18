@@ -1,4 +1,3 @@
-/node_modules
 .env
 config.json
 /.idea
@@ -7,3 +6,6 @@ pnpm-lock.yaml
 /.next
 next-env.d.ts
 package-lock.json
+/node_modules
+/discord-bot/node_modules
+/websocket/node_modules

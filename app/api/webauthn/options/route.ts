@@ -1,6 +1,12 @@
 import {NextResponse} from "next/server";
 import "@src/utils/envConfig";
+import {generateAuthenticationOptions} from "@simplewebauthn/server";
 
 export async function GET(req: Request) {
-    return NextResponse.json({message: "balls"});
+    // const options = await generateAuthenticationOptions({
+    //     rpID:
+    //     authenticatorSelection: {
+    //
+    //     }
+    // })
 }

@@ -8,7 +8,7 @@ import {
     TextInputStyle,
     LabelBuilder, TextDisplayBuilder
 } from "discord.js";
-import {Question} from "../schema/question";
+import {Question} from "../schema/question.ts";
 
 module.exports = {
     name: Events.InteractionCreate,

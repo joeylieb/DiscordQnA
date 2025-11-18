@@ -6,6 +6,9 @@ import {connect} from "mongoose"
 
 dotenv.config();
 
+const __dirname = import.meta.dirname;
+
+
 interface ClientWithCommands extends Client {
     commands: Collection<string, any>
 }
