@@ -4,8 +4,10 @@ config.json
 .DS_Store
 pnpm-lock.yaml
 /.next
-next-env.d.ts
+webserver/next-env.d.ts
 package-lock.json
 /node_modules
 /discord-bot/node_modules
 /websocket/node_modules
+/webserver/.next
+/webserver/node_modules

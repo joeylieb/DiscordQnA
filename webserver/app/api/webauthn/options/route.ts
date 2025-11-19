@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import "@src/utils/envConfig";
+import "../../../../src/utils/envConfig.ts";
 import {generateAuthenticationOptions} from "@simplewebauthn/server";
 
 export async function GET(req: Request) {

@@ -1,5 +1,5 @@
 import {EmbedBuilder, Events, MessageFlags, ModalSubmitInteraction, TextChannel} from "discord.js";
-import {Question} from "../schema/question.ts";
+import {Question} from "../../webserver/src/schema/question.ts";
 import config from "../../config.json"
 import spacetime from "spacetime";
 

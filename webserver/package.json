@@ -2,12 +2,12 @@
   "name": "discordqna",
   "version": "1.0.0",
   "description": "",
-  "main": "discord-bot/index.ts",
+  "main": "../discord-bot/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "next start",
-    "register": "ts-node discord-bot/registerCommands.ts",
-    "dev": "concurrently \"next dev --webpack\" \"ts-node ./src/index.ts\"",
+    "register": "ts-node ../discord-bot/registerCommands.ts",
+    "dev": "concurrently \"next dev --webpack\" \"ts-node webserver/src/index.ts\"",
     "build": "next build --webpack",
     "lint": "eslint",
     "lint:fix": "eslint --fix"

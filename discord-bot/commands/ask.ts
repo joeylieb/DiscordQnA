@@ -5,7 +5,7 @@ import {
 import config from "../../config.json";
 import spacetime from "spacetime";
 import {HydratedDocument} from "mongoose";
-import {IQuestion, Question} from "@src/schema/question.ts";
+import {IQuestion, Question} from "../../webserver/src/schema/question.ts";
 
 module.exports = {
     data: new SlashCommandBuilder()

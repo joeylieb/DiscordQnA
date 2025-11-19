@@ -1,25 +1,37 @@
 //TODO: Make a websocket endpoint to show your live UID as signing up
 //TODO: Add some heartbeat so AFK users will be kicked until they continue typing on page
+
 import {WebSocketServer} from "ws";
 import {EventEmitter} from "node:events";
+import {createServer} from "http"
+
+const server = createServer();
 
 const wsServer = new WebSocketServer({
-    port: 8080
+    server
 });
+
+server.on("error", console.error);
 
 interface JWebsocket extends WebSocket, EventEmitter {
     nextTime?: number,
-    debug: boolean
+    debug: boolean,
+    active: boolean
 }
 
 function heartbeat(websocket: JWebsocket) {
     const expectedTime = Math.round(Math.random() * 2000) + 1000;
     websocket.nextTime = expectedTime + Date.now();
     websocket.send(JSON.stringify({op: 1, d: expectedTime}));
+
+    setTimeout(() => {
+        if(!websocket.active) websocket.close();
+    }, expectedTime + 500)
 }
 
 wsServer.on("connection", (websocket: JWebsocket) => {
     websocket.debug = false;
+    websocket.active = false;
     websocket.on("error", (err) => console.error(err));
 
     heartbeat(websocket);
@@ -39,8 +51,9 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                     response = {op: 2, d: "Your websocket has improper data!"};
                     break;
                 }
-                if ((websocket.nextTime - Date.now()) > 500 || (websocket.nextTime - Date.now()) < 500){
+                if (Math.abs(websocket.nextTime - Date.now()) < 500){
                     response = {op: 1, d: "Pong"}
+                    websocket.active = true;
                 }
                 break;
             case 3:
@@ -53,3 +66,5 @@ wsServer.on("connection", (websocket: JWebsocket) => {
     })
 
 });
+
+server.listen(8080)

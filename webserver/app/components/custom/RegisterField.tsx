@@ -1,5 +1,5 @@
 'use client';
-import {FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet} from "@/components/ui/field";
+import {FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet} from "../ui/field.tsx";
 
 //TODO: Show live count of people registered as their UI
 
