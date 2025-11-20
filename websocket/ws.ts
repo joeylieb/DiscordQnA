@@ -23,6 +23,7 @@ function heartbeat(websocket: JWebsocket) {
     const expectedTime = Math.round(Math.random() * 2000) + 1000;
     websocket.nextTime = expectedTime + Date.now();
     websocket.send(JSON.stringify({op: 1, d: expectedTime}));
+    console.log("You have to respond by " + websocket.nextTime);
 
     setTimeout(() => {
         if(!websocket.active) websocket.close();

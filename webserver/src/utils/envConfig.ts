@@ -1,3 +1,6 @@
 import {loadEnvConfig} from "@next/env";
-const projectDir = process.cwd();
+import path from "node:path";
+
+const projectDir = path.join(process.cwd(), '../');
 loadEnvConfig(projectDir);
+
