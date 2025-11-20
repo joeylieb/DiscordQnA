@@ -16,7 +16,7 @@ export default function RegisterField({ url }: {url: string}) {
         socketRef.current = ws;
 
         ws.onmessage = (message: MessageEvent) => {
-            const parsedMessage = message.data
+            const parsedMessage = JSON.parse(message.data);
             console.log(parsedMessage)
             switch (parsedMessage.op) {
                 case 1:

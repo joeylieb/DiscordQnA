@@ -27,7 +27,7 @@ function heartbeat(websocket: JWebsocket) {
 
     setTimeout(() => {
         if(!websocket.active) websocket.close();
-    }, expectedTime + 500)
+    }, expectedTime + 1000)
 }
 
 wsServer.on("connection", (websocket: JWebsocket) => {
@@ -52,9 +52,12 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                     response = {op: 2, d: "Your websocket has improper data!"};
                     break;
                 }
-                if (Math.abs(websocket.nextTime - Date.now()) < 500){
+                console.log(Math.abs(websocket.nextTime - Date.now()));
+                if (Math.abs(websocket.nextTime - Date.now()) < 1000){
                     response = {op: 1, d: "Pong"}
                     websocket.active = true;
+                } else {
+                    websocket.active = false;
                 }
                 break;
             case 3:
@@ -62,7 +65,12 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                     response = {op: 2, d: "You did not specify a debug mode"};
                     break;
                 }
-                console.log(typeof parsedData.d)
+                if(typeof parsedData.d !== "boolean") {
+                    response = {op:2, d: "You did not give a valid data type for this operation"}
+                    break;
+                }
+                websocket.debug = parsedData.d;
+                websocket.send(JSON.stringify({op: 4, d: 1}));
         }
     })
 
