@@ -23,12 +23,20 @@ function heartbeat(websocket: JWebsocket) {
     const expectedTime = Math.round(Math.random() * 2000) + 1000;
     websocket.nextTime = expectedTime + Date.now();
     websocket.send(JSON.stringify({op: 1, d: expectedTime}));
-    console.log("You have to respond by " + websocket.nextTime);
-
     setTimeout(() => {
         if(!websocket.active) websocket.close();
     }, expectedTime + 1000)
 }
+
+function debugCallback(websocket: JWebsocket){
+    let memberCount = Math.floor(Math.random() * 1000) + 10;
+    setInterval(() => {
+        if(!websocket.debug) return;
+        memberCount++;
+        websocket.send(JSON.stringify({op:5, d: memberCount}))
+    }, Math.floor(Math.random() * 500) + 2000)
+}
+
 
 wsServer.on("connection", (websocket: JWebsocket) => {
     websocket.debug = false;
@@ -36,6 +44,7 @@ wsServer.on("connection", (websocket: JWebsocket) => {
     websocket.on("error", (err) => console.error(err));
 
     heartbeat(websocket);
+    debugCallback(websocket);
     setInterval(() => heartbeat(websocket), 30 * 1000)
 
     websocket.on("message", (data) => {
@@ -52,7 +61,6 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                     response = {op: 2, d: "Your websocket has improper data!"};
                     break;
                 }
-                console.log(Math.abs(websocket.nextTime - Date.now()));
                 if (Math.abs(websocket.nextTime - Date.now()) < 1000){
                     response = {op: 1, d: "Pong"}
                     websocket.active = true;
@@ -61,7 +69,7 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                 }
                 break;
             case 3:
-                if(!parsedData.d) {
+                if(parsedData.d.length === 0) {
                     response = {op: 2, d: "You did not specify a debug mode"};
                     break;
                 }
@@ -72,6 +80,7 @@ wsServer.on("connection", (websocket: JWebsocket) => {
                 websocket.debug = parsedData.d;
                 websocket.send(JSON.stringify({op: 4, d: 1}));
         }
+        if(response.op !== 0) websocket.send(JSON.stringify(response))
     })
 
 });

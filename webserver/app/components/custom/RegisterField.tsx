@@ -20,9 +20,13 @@ export default function RegisterField({ url }: {url: string}) {
             console.log(parsedMessage)
             switch (parsedMessage.op) {
                 case 1:
+                    if(typeof parsedMessage.d !== "number") break;
+                    console.log("Sending in " + parsedMessage.d + " ms.")
                     setTimeout(() => {
+                        console.log("send " + JSON.stringify({op:1}))
                         ws.send(JSON.stringify({op: 1}))
                     }, parsedMessage.d)
+                    break;
             }
         }
 
@@ -43,8 +47,8 @@ export default function RegisterField({ url }: {url: string}) {
 
     const onDebugMode = () => {
         setDebugMode(v => !v);
-        console.log(socketRef.current?.readyState)
-        socketRef.current?.send(JSON.stringify({op:3, d: debugMode}))
+        console.log(JSON.stringify({op:3, d: !debugMode}));
+        socketRef.current?.send(JSON.stringify({op:3, d: !debugMode}))
     }
 
     return (
