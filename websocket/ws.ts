@@ -4,12 +4,17 @@
 import {WebSocketServer} from "ws";
 import {EventEmitter} from "node:events";
 import {createServer} from "http"
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const server = createServer();
 
 const wsServer = new WebSocketServer({
     server
 });
+
+let lastCount: number = Infinity;
 
 server.on("error", console.error);
 
@@ -37,6 +42,28 @@ function debugCallback(websocket: JWebsocket){
     }, Math.floor(Math.random() * 500) + 2000)
 }
 
+async function getMemberCount(): Promise<number> {
+    const rawData = await fetch(process.env.WEBSERVER_URL! + "/api/util/member-count");
+    const data = await rawData.json();
+    lastCount = data.amount;
+    return data.amount;
+}
+
+function liveMemberCallback(websocket: JWebsocket){
+    websocket.send(JSON.stringify({op:5, d: lastCount}));
+    let lastLocalCount = lastCount;
+
+    const interval = setInterval(async () => {
+        if(websocket.debug) return;
+        if(lastLocalCount !== lastCount) {
+            lastLocalCount = lastCount;
+            websocket.send(JSON.stringify({op:5, d: lastCount}))
+        }
+    }, 1000);
+
+    websocket.on("close", () => clearInterval(interval));
+}
+
 
 wsServer.on("connection", (websocket: JWebsocket) => {
     websocket.debug = false;
@@ -45,6 +72,7 @@ wsServer.on("connection", (websocket: JWebsocket) => {
 
     heartbeat(websocket);
     debugCallback(websocket);
+    liveMemberCallback(websocket);
     setInterval(() => heartbeat(websocket), 30 * 1000)
 
     websocket.on("message", (data) => {
@@ -85,4 +113,8 @@ wsServer.on("connection", (websocket: JWebsocket) => {
 
 });
 
-server.listen(8080)
+server.listen(8080, () => {
+    setInterval(() => {
+        getMemberCount();
+    }, 1000)
+})

@@ -6,14 +6,15 @@ import {useEffect, useRef, useState} from "react";
 import {usernameGenerator} from "@src/utils/username.ts";
 import {Label} from "@/components/ui/label.tsx";
 import RegisterButton from "@/components/custom/RegisterButton.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import {useRouter} from "next/navigation";
 
 export default function RegisterField({ url }: {url: string}) {
     const [wsStatus, setWsStatus] = useState<{active: boolean, lastMessage: number | null}>({active: false, lastMessage: null});
     const [debugMode, setDebugMode] = useState<boolean>(false);
     const [yourUID, setYourUID] = useState<number | null>(null);
     const [userObj, setUsername] = useState<{ username: string, date: number } | null>(null);
-    const socketRef = useRef<WebSocket | null>(null)
+    const socketRef = useRef<WebSocket | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const ws = new WebSocket(url);
@@ -30,8 +31,11 @@ export default function RegisterField({ url }: {url: string}) {
                     }, parsedMessage.d)
                     break;
                 case 5:
-                    if(typeof parsedMessage.d !== "number") break;
-                    setYourUID(parsedMessage.d)
+                    if(typeof parsedMessage.d !== "number") {
+                        console.log("Not a number")
+                        break;
+                    }
+                    setYourUID(parsedMessage.d + 1)
                     setUsername(usernameGenerator(yourUID! + 1))
             }
         }
@@ -50,6 +54,10 @@ export default function RegisterField({ url }: {url: string}) {
             ws.close()
         }
     }, []);
+
+    useEffect(() => {
+        if(!wsStatus.active) router.push("/register");
+    }, [wsStatus]);
 
     const onDebugMode = () => {
         setDebugMode(v => !v);
@@ -71,7 +79,7 @@ export default function RegisterField({ url }: {url: string}) {
                             <FieldGroup className="space-y-4">
                                 <Field>
                                     <FieldLabel className="text-sm font-medium text-gray-700">Your UID</FieldLabel>
-                                    <Input disabled placeholder={yourUID ? (yourUID + 1).toString() : `N/A`} className="bg-gray-100/50 text-gray-600 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-400"/>
+                                    <Input disabled placeholder={yourUID ? (yourUID).toString() : `N/A`} className="bg-gray-100/50 text-gray-600 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-400"/>
                                 </Field>
                                 {yourUID && (
                                     <Field>

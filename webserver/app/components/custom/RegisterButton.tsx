@@ -2,10 +2,10 @@
 import {Button} from "@/components/ui/button.tsx";
 import {startRegistration} from "@simplewebauthn/browser";
 import {useState} from "react";
-import {redirect} from "next/navigation";
+import {useRouter} from "next/navigation";
 
 export default function RegisterButton({username, uid, dateCreated}:{username: string, uid: number, dateCreated: number}){
-    const [success, setSuccess] = useState<boolean>(false);
+    const router = useRouter()
 
     const onButtonClick = async () => {
         const options = await fetch("/api/webauthn/options?name=" + username);
@@ -17,11 +17,11 @@ export default function RegisterButton({username, uid, dateCreated}:{username: s
             const userObj = await fetch("/api/account/create", {
                 method: "POST",
                 body: JSON.stringify({username, uid, dateCreated, attResp}),
+                headers: {"Content-Type": "application/json"}
             });
             const result = await userObj.json();
-
-            if(result.data.success){
-                redirect("/?message=success");
+            if(result.success){
+                router.push("/?message=success");
             }
         } catch(err) {
             console.error(err)
@@ -29,6 +29,6 @@ export default function RegisterButton({username, uid, dateCreated}:{username: s
     }
 
     return (
-        <Button type="button" onClick={onButtonClick}>Continue</Button>
+        <Button type="button" onClick={onButtonClick} className="mt-4 w-full py-3 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition-all duration-150 ease-out hover:shadow-blue-600/30 hover:scale-[1.02]">Continue</Button>
     )
 }

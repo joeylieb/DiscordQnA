@@ -1,25 +1,25 @@
 import {NextRequest, NextResponse} from "next/server";
 import {RegistrationResponseJSON, verifyRegistrationResponse} from "@simplewebauthn/server";
-import {challengesStored, getChallenge} from "@src/utils/challenges.ts";
 import {User} from "@src/schema/user.ts";
 import {dbConnect} from "@src/utils/db.ts";
+import {cookies} from "next/headers";
 
 export async function POST(req: NextRequest){
     const body: {username: string, uid: number, dateCreated: number, attResp: RegistrationResponseJSON} = await req.json();
+    const cookieData = await cookies();
     if(!body.username || !body.uid || !body.dateCreated ) return NextResponse.json({error: "Invalid username or uid or date"}, {status: 500});
     if(!body.attResp) return NextResponse.json({error: "Invalid Registration Data"}, {status: 400});
 
 
+    if(!cookieData.has("regChallenge")) return NextResponse.json({error: "Cannot find your challenge cookies"}, {status: 501});
+    const userDataRaw = cookieData.get("regChallenge")!.value;
+    const userData: {challenge: string, userID: string} = JSON.parse(userDataRaw);
     let verification;
-    console.log("pid:", process.pid, "size:", challengesStored.size);
-    const challenge = getChallenge(body.username);
-
-    if(!challenge) return NextResponse.json({error: "Could not find challenge via username"}, {status: 500})
 
     try {
         verification = await verifyRegistrationResponse({
             response: body.attResp,
-            expectedChallenge: getChallenge(body.username)!.challenge,
+            expectedChallenge: userData.challenge,
             expectedOrigin: process.env.RP_ORIGIN!,
             expectedRPID: process.env.RP_ID!
         });
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest){
         passkeys: [{
             id: verification.registrationInfo!.credential.id,
             publicKey: verification.registrationInfo!.credential.publicKey,
-            webauthnUserID: challenge.user.id,
+            webauthnUserID: userData.userID,
             counter: verification.registrationInfo!.credential.counter,
             transports: verification.registrationInfo!.credential.transports,
             deviceType: verification.registrationInfo!.credentialDeviceType,

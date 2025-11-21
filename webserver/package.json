@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "next start",
     "register": "ts-node ../discord-bot/registerCommands.ts",
-    "dev": "concurrently \"next dev --webpack\" \"ts-node ../websocket/ws.ts\"",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "lint": "eslint",
     "lint:fix": "eslint --fix"
