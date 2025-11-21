@@ -1,14 +1,18 @@
 'use client';
 import {Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet} from "../ui/field.tsx";
 import {Input} from "@/components/ui/input.tsx";
+import {Switch} from "@/components/ui/switch.tsx";
 import {useEffect, useRef, useState} from "react";
-import {Toggle} from "@/components/ui/toggle.tsx";
-
-//TODO: Show live count of people registered as their UI
+import {usernameGenerator} from "@src/utils/username.ts";
+import {Label} from "@/components/ui/label.tsx";
+import RegisterButton from "@/components/custom/RegisterButton.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 export default function RegisterField({ url }: {url: string}) {
     const [wsStatus, setWsStatus] = useState<{active: boolean, lastMessage: number | null}>({active: false, lastMessage: null});
     const [debugMode, setDebugMode] = useState<boolean>(false);
+    const [yourUID, setYourUID] = useState<number | null>(null);
+    const [userObj, setUsername] = useState<{ username: string, date: number } | null>(null);
     const socketRef = useRef<WebSocket | null>(null)
 
     useEffect(() => {
@@ -21,12 +25,14 @@ export default function RegisterField({ url }: {url: string}) {
             switch (parsedMessage.op) {
                 case 1:
                     if(typeof parsedMessage.d !== "number") break;
-                    console.log("Sending in " + parsedMessage.d + " ms.")
                     setTimeout(() => {
-                        console.log("send " + JSON.stringify({op:1}))
                         ws.send(JSON.stringify({op: 1}))
                     }, parsedMessage.d)
                     break;
+                case 5:
+                    if(typeof parsedMessage.d !== "number") break;
+                    setYourUID(parsedMessage.d)
+                    setUsername(usernameGenerator(yourUID! + 1))
             }
         }
 
@@ -52,31 +58,39 @@ export default function RegisterField({ url }: {url: string}) {
     }
 
     return (
-        <div className="flex">
-            <FieldSet>
-                <FieldLegend>Register for AskThem</FieldLegend>
-                <FieldDescription>Please Fill Out the Info Accordingly</FieldDescription>
-                <FieldGroup>
-                    <Field>
-                        <FieldLabel>Debug Mode</FieldLabel>
-                        <Toggle
-                            aria-label="Toggle Debug Mode"
-                            size="lg"
-                            variant="outline"
-                            className="data-[state=on]:bg-gray-500 transition-all duration-150 hover:bg-blue-50"
-                            onClick={() => onDebugMode()}
-                        >
-                            <span className="font-medium tracking-wide">Debug Mode</span>
-                        </Toggle>
-                    </Field>
-                    <Field>
-                        <FieldLabel>Your UID</FieldLabel>
-                        <Input disabled={true}/>
-                        <p>{wsStatus?.active ? `The websocket is open!` : `The websocket is closed!`}</p>
-                        <p>{debugMode ? `Debug mode is on` : `Debug mode is off`}</p>
-                    </Field>
-                </FieldGroup>
-            </FieldSet>
+        <div className="min-h-screen flex items-center justify-center bg-[#0E1525] p-6 animate-fadeIn">
+            <div className="w-full max-w-md mx-auto p-6">
+                <form>
+                    <FieldGroup className="bg-white/95 rounded-2xl shadow-xl p-8 border border-white/20 backdrop-blur-md w-[420px] space-y-6 transition-all hover:shadow-2xl hover:border-white/30">
+                        <FieldSet>
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Register for AskThem</h2>
+                            <div className="flex flex-row gap-2">
+                                <Switch id="debug-mode" onCheckedChange={onDebugMode} className="" />
+                                <Label htmlFor="debug-mode" className="text-sm text-gray-700 font-medium">Debug Mode</Label>
+                            </div>
+                            <FieldGroup className="space-y-4">
+                                <Field>
+                                    <FieldLabel className="text-sm font-medium text-gray-700">Your UID</FieldLabel>
+                                    <Input disabled placeholder={yourUID ? (yourUID + 1).toString() : `N/A`} className="bg-gray-100/50 text-gray-600 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-400"/>
+                                </Field>
+                                {yourUID && (
+                                    <Field>
+                                        <FieldLabel className="text-sm font-medium text-gray-700">
+                                            Your username will be {" "}<strong className="text-gray-900">{userObj!.username}</strong>
+                                        </FieldLabel>
+                                    </Field>
+                                )}
+                                {userObj && (
+                                    <Field>
+                                        <RegisterButton username={userObj.username} uid={yourUID!} dateCreated={userObj.date}/>
+                                    </Field>
+                                )}
+                            </FieldGroup>
+                        </FieldSet>
+                    </FieldGroup>
+                </form>
+
+            </div>
         </div>
     )
 }

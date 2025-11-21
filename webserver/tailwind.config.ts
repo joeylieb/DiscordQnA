@@ -22,6 +22,18 @@ module.exports = {
                 fadeOut: "fadeOut 150ms ease-in",
                 zoomIn: "zoomIn 200ms ease-out",
                 zoomOut: "zoomOut 150ms ease-in"
+            },
+            colors: {
+                background: '#0f172a',
+                foreground: '#f8fafc',
+
+                primary: {
+                    DEFAULT: '#3b82f6',
+                    foreground: '#ffffff',
+                },
+
+                surface: '#1e293b',
+                'surface-border': '#334155',
             }
         },
     },

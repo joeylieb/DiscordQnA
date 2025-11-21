@@ -1,14 +1,30 @@
-import {model, Schema} from "mongoose";
+import {model, models, Schema} from "mongoose";
+import {AuthenticatorTransportFuture, CredentialDeviceType} from "@simplewebauthn/server";
+
+interface Passkey {
+    id: Base64URLString,
+    publicKey: Uint8Array,
+    webauthnUserID: Base64URLString,
+    counter: number,
+    deviceType: CredentialDeviceType,
+    backedUp: boolean,
+    transports?: AuthenticatorTransportFuture[]
+}
 
 export interface IUser {
-    uuid: String,
-    role: "Answerer" | "Quesioner",
-
+    uid: number,
+    username: string,
+    purchasedAnswerer: boolean,
+    passkeys: Passkey[],
+    dateCreated: number
 }
 
 const UserSchema = new Schema<IUser>({
-    uuid: {type: String, unique: true, required: true},
-    role: {type: String, required: true},
+    uid: {type: Number, unique: true, required: true},
+    username: {type: String, required: true},
+    purchasedAnswerer: {type: Boolean, required: true},
+    passkeys: Array,
+    dateCreated: {type: Number, required: true},
 });
 
-export const User = model<IUser>("User", UserSchema);
+export const User = models.User || model<IUser>("User", UserSchema);

@@ -1,10 +1,8 @@
 import {Client, Events, GatewayIntentBits, Collection, MessageFlags} from "discord.js";
-import dotenv from "dotenv";
+import "dotenv/config"
 import * as path from "node:path";
 import * as fs from "node:fs";
 import {connect} from "mongoose"
-
-dotenv.config();
 
 interface ClientWithCommands extends Client {
     commands: Collection<string, any>
