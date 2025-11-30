@@ -56,8 +56,12 @@ This websocket is primarily used for live component communication between the da
 - [X] Codebase setup
 - [X] Proof of concept works
 - [X] All components communicating
-- Live Websocket User Count
-- Users can sign up
-- Passkeys
+- [X] Live Websocket User Count
+- [X] Users can sign up
+- [X] Passkeys
 - Inboxes
+- Procedural Generated Avatars
+- Question Ask Modal
+- Encryption at Rest
+- Question Explore Page
 - More!!!
