@@ -12,9 +12,16 @@ import {Session} from "@src/schema/session.ts";
 
 export async function POST(req: NextRequest){
     const cookieData = await cookies();
-    const body: AuthenticationResponseJSON = await req.json();
     const headerData = await headers();
     const {device} = userAgent(req)
+    let body: AuthenticationResponseJSON;
+
+    try {
+        body = await req.json();
+    } catch (error) {
+        return NextResponse.json({info: "Cancelled"}, {status: 200})
+    }
+
     await dbConnect();
 
     const userObj: IUser | null = await User.findOne({passkeys: {$elemMatch: {webauthnUserID: body.response.userHandle}}});

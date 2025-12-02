@@ -16,7 +16,8 @@ export interface IUser {
     username: string,
     purchasedAnswerer: boolean,
     passkeys: Passkey[],
-    dateCreated: number
+    dateCreated: number,
+    fullID: string
 }
 
 const UserSchema = new Schema<IUser>({
@@ -25,6 +26,7 @@ const UserSchema = new Schema<IUser>({
     purchasedAnswerer: {type: Boolean, required: true},
     passkeys: Array,
     dateCreated: {type: Number, required: true},
+    fullID: {type: String, required: true},
 });
 
 export const User = models.User || model<IUser>("User", UserSchema);

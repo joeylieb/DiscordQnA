@@ -4,19 +4,23 @@ import {startRegistration} from "@simplewebauthn/browser";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 
-export default function RegisterButton({username, uid, dateCreated}:{username: string, uid: number, dateCreated: number}){
+export default function RegisterButton(){
     const router = useRouter()
 
     const onButtonClick = async () => {
-        const options = await fetch("/api/webauthn/options?name=" + username);
+        const options = await fetch("/api/webauthn/options");
+        if(options.status === 500){
+            // Alert, error
+            console.log(await options.text());
+            return;
+        }
         const optionsJSON = await options.json();
-        console.log(optionsJSON)
 
         try {
             const attResp = await startRegistration({ optionsJSON: optionsJSON.data });
             const userObj = await fetch("/api/account/create", {
                 method: "POST",
-                body: JSON.stringify({username, uid, dateCreated, attResp}),
+                body: JSON.stringify({attResp}),
                 headers: {"Content-Type": "application/json"}
             });
             const result = await userObj.json();

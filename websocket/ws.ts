@@ -1,6 +1,3 @@
-//TODO: Make a websocket endpoint to show your live UID as signing up
-//TODO: Add some heartbeat so AFK users will be kicked until they continue typing on page
-
 import {WebSocketServer} from "ws";
 import {EventEmitter} from "node:events";
 import {createServer} from "http"
@@ -15,6 +12,7 @@ const wsServer = new WebSocketServer({
 });
 
 let lastCount: number = Infinity;
+let websocketsConnected = 0;
 
 server.on("error", console.error);
 
@@ -66,10 +64,11 @@ function liveMemberCallback(websocket: JWebsocket){
 
 
 wsServer.on("connection", (websocket: JWebsocket) => {
+    websocketsConnected++;
     websocket.debug = false;
     websocket.active = false;
     websocket.on("error", (err) => console.error(err));
-
+    websocket.on("close", () => websocketsConnected--);
     heartbeat(websocket);
     debugCallback(websocket);
     liveMemberCallback(websocket);
@@ -114,7 +113,8 @@ wsServer.on("connection", (websocket: JWebsocket) => {
 });
 
 server.listen(8080, () => {
-    setInterval(() => {
-        getMemberCount();
+    setInterval(async () => {
+        if(websocketsConnected === 0) return;
+        await getMemberCount();
     }, 1000)
 })

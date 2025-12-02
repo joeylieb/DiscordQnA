@@ -1,25 +1,27 @@
 import {NextRequest, NextResponse} from "next/server";
 import {RegistrationResponseJSON, verifyRegistrationResponse} from "@simplewebauthn/server";
-import {User} from "@src/schema/user.ts";
-import {dbConnect} from "@src/utils/db.ts";
+import {IUser, User} from "@src/schema/user.ts";
+import {dbConnect, getNextUID} from "@src/utils/db.ts";
 import {cookies} from "next/headers";
+import {UserID} from "@src/utils/username.ts";
 
 export async function POST(req: NextRequest){
-    const body: {username: string, uid: number, dateCreated: number, attResp: RegistrationResponseJSON} = await req.json();
+    const body: {attResp: RegistrationResponseJSON} = await req.json();
     const cookieData = await cookies();
-    if(!body.username || !body.uid || !body.dateCreated ) return NextResponse.json({error: "Invalid username or uid or date"}, {status: 500});
     if(!body.attResp) return NextResponse.json({error: "Invalid Registration Data"}, {status: 400});
 
-
     if(!cookieData.has("regChallenge")) return NextResponse.json({error: "Cannot find your challenge cookies"}, {status: 501});
-    const userDataRaw = cookieData.get("regChallenge")!.value;
-    const userData: {challenge: string, userID: string} = JSON.parse(userDataRaw);
+    const userChallenges: {challenge: string, userID: string}  = JSON.parse(cookieData.get("regChallenge")!.value);
+
+    if(!cookieData.has("proposedUserData")) return NextResponse.json({error: "Cannot find your user cookies"}, {status: 501});
+    const userData: UserID = JSON.parse(cookieData.get("proposedUserData")!.value)
+
     let verification;
 
     try {
         verification = await verifyRegistrationResponse({
             response: body.attResp,
-            expectedChallenge: userData.challenge,
+            expectedChallenge: userChallenges.challenge,
             expectedOrigin: process.env.RP_ORIGIN!,
             expectedRPID: process.env.RP_ID!
         });
@@ -28,22 +30,23 @@ export async function POST(req: NextRequest){
         return NextResponse.json({error: err.message}, {status: 400});
     }
 
-    await dbConnect()
+    const guaranteedUID = await getNextUID()
 
-    const userModel = new User({
-        username: body.username,
-        uid: body.uid,
-        dateCreated: body.dateCreated,
+    const userModel = new User<IUser>({
+        username: userData.username,
+        uid: guaranteedUID,
+        dateCreated: userData.date,
         passkeys: [{
             id: verification.registrationInfo!.credential.id,
             publicKey: verification.registrationInfo!.credential.publicKey,
-            webauthnUserID: userData.userID,
+            webauthnUserID: userChallenges.userID,
             counter: verification.registrationInfo!.credential.counter,
             transports: verification.registrationInfo!.credential.transports,
             deviceType: verification.registrationInfo!.credentialDeviceType,
             backedUp: verification.registrationInfo!.credentialBackedUp
         }],
-        purchasedAnswerer: false
+        purchasedAnswerer: false,
+        fullID: userData.fullID
     });
 
     await userModel.save();

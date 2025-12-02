@@ -21,7 +21,7 @@ export default function Page() {
 
         });
         const authRes = await authRaw.json();
-        if(authRes.success) redirect("/inbox")
+        if(authRes.success) redirect("/me/inbox")
     }
 
     return (

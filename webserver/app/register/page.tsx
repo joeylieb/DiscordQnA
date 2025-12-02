@@ -4,7 +4,7 @@ import "../../src/utils/envConfig.ts"
 export default function App() {
     return (
         <div>
-            <RegisterField url={process.env.WEBSOCKET!}/>
+            <RegisterField url={process.env.WEBSOCKET_URL!}/>
         </div>
     )
 }

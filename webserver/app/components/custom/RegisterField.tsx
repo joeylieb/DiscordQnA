@@ -2,8 +2,8 @@
 import {Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet} from "../ui/field.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
-import {useEffect, useRef, useState} from "react";
-import {usernameGenerator} from "@src/utils/username.ts";
+import {use, useEffect, useRef, useState} from "react";
+import {UserID, usernameGenerator} from "@src/utils/username.ts";
 import {Label} from "@/components/ui/label.tsx";
 import RegisterButton from "@/components/custom/RegisterButton.tsx";
 import {useRouter} from "next/navigation";
@@ -11,16 +11,17 @@ import {useRouter} from "next/navigation";
 export default function RegisterField({ url }: {url: string}) {
     const [wsStatus, setWsStatus] = useState<{active: boolean, lastMessage: number | null}>({active: false, lastMessage: null});
     const [debugMode, setDebugMode] = useState<boolean>(false);
-    const [yourUID, setYourUID] = useState<number | null>(null);
-    const [userObj, setUsername] = useState<{ username: string, date: number } | null>(null);
+    const [getUID, setUID] = useState<number | null>(null);
+    const [possibleUsername, setPossibleUsername] = useState<string | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
     const router = useRouter();
 
     useEffect(() => {
+
         const ws = new WebSocket(url);
         socketRef.current = ws;
 
-        ws.onmessage = (message: MessageEvent) => {
+        ws.onmessage = async (message: MessageEvent) => {
             const parsedMessage = JSON.parse(message.data);
             console.log(parsedMessage)
             switch (parsedMessage.op) {
@@ -35,8 +36,8 @@ export default function RegisterField({ url }: {url: string}) {
                         console.log("Not a number")
                         break;
                     }
-                    setYourUID(parsedMessage.d + 1)
-                    setUsername(usernameGenerator(yourUID! + 1))
+                    setUID(parsedMessage.d + 1)
+                    setPossibleUsername((await usernameGenerator(parsedMessage.d)).username)
             }
         }
 
@@ -61,7 +62,6 @@ export default function RegisterField({ url }: {url: string}) {
 
     const onDebugMode = () => {
         setDebugMode(v => !v);
-        console.log(JSON.stringify({op:3, d: !debugMode}));
         socketRef.current?.send(JSON.stringify({op:3, d: !debugMode}))
     }
 
@@ -76,24 +76,23 @@ export default function RegisterField({ url }: {url: string}) {
                                 <Switch id="debug-mode" onCheckedChange={onDebugMode} className="" />
                                 <Label htmlFor="debug-mode" className="text-sm text-gray-700 font-medium">Debug Mode</Label>
                             </div>
-                            <FieldGroup className="space-y-4">
-                                <Field>
-                                    <FieldLabel className="text-sm font-medium text-gray-700">Your UID</FieldLabel>
-                                    <Input disabled placeholder={yourUID ? (yourUID).toString() : `N/A`} className="bg-gray-100/50 text-gray-600 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-400"/>
-                                </Field>
-                                {yourUID && (
+                            {getUID && (
+                                <FieldGroup className="space-y-4">
+                                    <Field>
+                                        <FieldLabel className="text-sm font-medium text-gray-700">Your UID</FieldLabel>
+                                        <Input disabled placeholder={getUID.toString()} className="bg-gray-100/50 text-gray-600 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-400"/>
+                                    </Field>
                                     <Field>
                                         <FieldLabel className="text-sm font-medium text-gray-700">
-                                            Your username will be {" "}<strong className="text-gray-900">{userObj!.username}</strong>
+                                            Your username will look like {" "}<strong className="text-gray-900">{possibleUsername}</strong>
                                         </FieldLabel>
                                     </Field>
-                                )}
-                                {userObj && (
                                     <Field>
-                                        <RegisterButton username={userObj.username} uid={yourUID!} dateCreated={userObj.date}/>
+                                        <RegisterButton />
                                     </Field>
-                                )}
-                            </FieldGroup>
+
+                                </FieldGroup>
+                            )}
                         </FieldSet>
                     </FieldGroup>
                 </form>
